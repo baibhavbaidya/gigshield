@@ -405,7 +405,126 @@ gigshield/
 
 ---
 
-## Demo Scenario
+## Adversarial Defense & Anti-Spoofing Strategy
+
+### The Market Crash Scenario
+
+A coordinated fraud ring of 500 delivery partners submits simultaneous claims during a declared disruption event. All 500 present valid GPS coordinates inside the disruption zone. All 500 have active weekly policies. On the surface, every claim looks legitimate. Simple location verification passes them all. The liquidity pool is drained.
+
+This is the attack GigShield is designed to survive.
+
+---
+
+### Why Simple GPS Verification Fails
+
+A GPS coordinate is just a number. Any Android device can be spoofed using freely available apps — mock location tools, VPN-based GPS fakers, or rooted device exploits. A fraudster sitting in Pune can make their phone report coordinates in Andheri East within seconds. Basic "is the worker inside the zone" checks are trivially defeated.
+
+A coordinated ring makes this worse. If 500 people simultaneously report the same spoofed coordinates, the system sees a mass claim event — which in a legitimate rainstorm is actually corroborating evidence. Our own design uses mass simultaneous claims as a legitimacy signal. The ring exploits this.
+
+GigShield's defense operates across five independent signal layers. No single layer is foolproof. All five together make coordinated fraud statistically indetectable to execute and computationally certain to detect.
+
+---
+
+### Layer 1 — Device Behaviour Fingerprinting
+
+Genuine GPS movement has physical constraints. A delivery worker moving through a city produces a trail of coordinates that changes continuously, reflects road geometry, and matches realistic travel speeds. A spoofed location is typically static or moves in implausible patterns.
+
+**What we check:**
+
+- GPS coordinate history for the 2 hours preceding the disruption event. A genuine worker has a movement trail. A spoofer typically has a static pin or sudden teleportation from a distant location.
+- Speed consistency. If a worker's GPS shows them in Dharavi at 5:58 PM and Andheri at 6:01 PM — a distance of 8 kilometres — that is physically impossible on Mumbai roads. Flag immediately.
+- Altitude variance. Genuine GPS in an urban environment shows minor altitude fluctuations as the device moves. A mocked location often reports a perfectly flat altitude line.
+- GPS accuracy radius. Real device GPS reports an accuracy radius that fluctuates naturally. Many spoofing tools report an impossibly precise accuracy of exactly 0 metres or a suspiciously round number like 10.000 metres.
+
+A worker with a static GPS pin for 2 hours who suddenly appears inside a disruption zone at the exact moment of a trigger is flagged — not rejected, but flagged.
+
+---
+
+### Layer 2 — Platform Activity Correlation
+
+GigShield integrates with a simulated platform API representing the worker's Blinkit or Zepto activity feed. A genuine worker who was delivering in Andheri before the rain started has a visible activity trail — order accepted timestamps, delivery completion logs, last known active zone.
+
+**What we check:**
+
+- Was the worker's platform account showing active orders in their registered zone in the 90 minutes before the disruption trigger fired?
+- Did the worker's platform app go offline at approximately the same time as the disruption? A legitimate rain claim should coincide with the worker going offline on the platform.
+- Does the worker's platform-reported last active zone match their GPS-reported location at claim time?
+
+A worker with zero platform activity for 6 hours who claims income loss during a 3-hour rain event has nothing to lose — they were not earning anyway. This is a strong fraud signal and grounds for automatic rejection regardless of GPS position.
+
+---
+
+### Layer 3 — Behavioural Baseline Deviation
+
+Every worker in GigShield has a historical profile built from their onboarding data and weekly activity patterns — typical working hours, typical zones, average orders per hour, typical claim frequency.
+
+**What we check:**
+
+- Has this worker claimed more than twice in the past 30 days? Fraudsters tend to claim every possible disruption event. Genuine workers claim occasionally.
+- Is this claim occurring outside the worker's typical working hours? A worker who normally operates 9 AM to 5 PM submitting a claim for a 10 PM disruption is anomalous.
+- Has this worker never claimed before and is now submitting a claim during a high-value disruption event? New accounts with no history suddenly appearing during large events are a known fraud pattern.
+
+The Isolation Forest model encodes these baselines during training. Any significant deviation from a worker's own historical behaviour increases their fraud score independently of GPS data.
+
+---
+
+### Layer 4 — Coordinated Ring Detection
+
+This is the layer that specifically addresses the Market Crash scenario — 500 people acting together.
+
+Individual fraud detection misses rings because each individual claim may look borderline legitimate. Ring detection looks at the population of claims, not individual claims.
+
+**What we check:**
+
+- Claim velocity. If 500 claims arrive within 90 seconds of a trigger firing, that is anomalous. Genuine workers notice disruptions, wait, and claim over a 15 to 30 minute window naturally. Coordinated rings submit simultaneously because they are automated or instructed.
+- Device fingerprint clustering. If a large number of claims originate from devices with identical GPS accuracy values, identical Android build numbers, or identical screen resolution metadata — that cluster is almost certainly using the same spoofing tool.
+- Network origin clustering. If multiple claims originate from the same IP address, the same mobile network cell tower, or the same ISP subnet — they are physically co-located, not distributed across a zone.
+- Social graph clustering. If 200 of the 500 claimants registered their accounts within the same 48-hour window, referred by the same source, or share overlapping phone number prefixes — that is an organised ring onboarding together.
+- Zone saturation check. GigShield knows the approximate number of active Q-Commerce workers per zone from platform data. If claims in Andheri exceed 120 percent of the known active worker population for that zone, the excess is automatically held pending review. You cannot have more legitimate claims than there are workers.
+
+When a ring is detected as a population, GigShield does not reject all 500 claims immediately. It quarantines the entire cluster, promotes every claim in the cluster to manual review, and freezes payouts for that event until the review is complete. This prevents the liquidity drain while preserving the rights of any genuinely stranded workers caught in the flagged cluster.
+
+---
+
+### Layer 5 — Post-Event Ground Truth Verification
+
+Parametric insurance has a unique advantage over traditional insurance — the trigger event is independently verifiable from multiple external sources after the fact.
+
+**What we do:**
+
+- Cross-reference the claimed disruption event against at least two independent data sources. A rainfall claim must be supported by both OpenWeatherMap and IMD data showing threshold-crossing rainfall in the specific pin code at the claimed time.
+- Pull historical order volume data from the platform mock API for that zone during the event window. If Blinkit's own data shows order volume dropped by 70 percent in Andheri between 6 PM and 9 PM, that corroborates the disruption. If order volume was normal, the disruption did not materially impact workers.
+- For held or quarantined claims, request passive verification — did the worker's phone connect to any darkstore WiFi network during the event window? Did the platform app report the worker as available or unavailable?
+
+Post-event verification does not delay payouts for clean claims. It runs in parallel for flagged clusters only, with a 24-hour resolution window before held claims are approved or rejected.
+
+---
+
+### How We Protect Honest Workers Inside a Flagged Cluster
+
+This is the hardest problem. A genuine worker stranded in Andheri during a real rainstorm should not be punished because 400 fraudsters happened to target the same event.
+
+**Our approach:**
+
+Any worker inside a quarantined cluster whose individual signals are all clean — continuous GPS movement trail, active platform history, normal behavioural baseline, no device fingerprint match to the spoofing cluster — is automatically separated from the cluster and fast-tracked for individual approval. Their payout is not delayed.
+
+Only workers whose individual signals overlap with ring indicators remain in the manual review queue. The default assumption for ambiguous cases is legitimacy, not fraud. We would rather approve one fraudulent claim than deny one genuine worker's payout. The financial cost of one false approval is Rs. 230. The human cost of one false rejection is a worker who cannot pay rent.
+
+---
+
+### Summary — The Five Layers
+
+| Layer | What It Catches | False Positive Risk |
+|---|---|---|
+| Device behaviour fingerprinting | Individual GPS spoofers | Low — genuine workers have natural movement |
+| Platform activity correlation | Workers not actually working | Very low — platform logs are independent |
+| Behavioural baseline deviation | Opportunistic serial claimants | Low — baselines are worker-specific |
+| Coordinated ring detection | Organised fraud rings | Medium — honest workers may be in cluster |
+| Post-event ground truth | Events that did not actually occur | Very low — external data is independent |
+
+No fraud ring can defeat all five layers simultaneously without leaving a detectable signature in at least one. The cost of coordinating a successful attack across device fingerprints, platform activity, behavioural baselines, network origins, and external event data exceeds the value of any single week's payout pool — making GigShield economically unattractive to attack.
+
+---
 
 The following scenario will be demonstrated in the Phase 3 video submission.
 
