@@ -4,6 +4,15 @@
 
 ---
 
+## Team — Smooth Operators
+
+- Baibhav Baidya
+- Shivam Kumar
+- Ayush Chaudhari
+- Adriti Sharma
+
+---
+
 ## The Problem
 
 India's Q-Commerce delivery workers — operating for platforms like Zepto, Blinkit, and Swiggy Instamart — work under extreme time pressure with zero financial safety net. When external disruptions occur, such as heavy rainfall, severe air quality, platform outages, or civic curfews, their ability to earn drops to zero. They bear the full financial loss with no recourse.
