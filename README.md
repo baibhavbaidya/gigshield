@@ -44,7 +44,7 @@ GigShield covers **income loss only**. We do not cover health, life, accident, o
 
 ## Disruption Triggers
 
-We identified nine disruption types across four categories, specific to the Q-Commerce persona. This goes beyond standard weather coverage because Q-Commerce workers face a uniquely diverse set of income threats.
+We identified nine disruption types across three categories, specific to the Q-Commerce persona. This goes beyond standard weather coverage because Q-Commerce workers face a uniquely diverse set of income threats.
 
 ### Category 1 — Environmental
 
@@ -370,7 +370,7 @@ The worker sees a summary screen showing total earnings for the week, income pro
 
 ## Unique Differentiators
 
-**Nine triggers across four categories.** Most parametric insurance products cover weather only. GigShield covers environmental, social, platform, and infrastructure disruptions — all specific to the Q-Commerce delivery context in India.
+**Nine triggers across three categories.** Most parametric insurance products cover weather only. GigShield covers environmental, social, platform, and infrastructure disruptions — all specific to the Q-Commerce delivery context in India.
 
 **Monday Forecast with worker agency.** Workers see a 7-day disruption probability forecast every Monday and choose their coverage tier accordingly. No other parametric insurance product in India gives gig workers this kind of informed, weekly decision-making capability.
 
