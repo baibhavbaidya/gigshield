@@ -9,10 +9,11 @@ lerna-debug.log*
 
 node_modules
 dist
-dist-ssr
-*.local
 .env
 .env.local
+frontend/.env
+frontend/.env.local
+backend/.env
 .env.production
 
 # Editor directories and files

@@ -534,4 +534,4 @@ This is consistent with the Phase 3 deliverable requirement to visually demonstr
 
 ---
 
-*GigShield — because one bad monsoon week should not mean a skipped meal.*
+*GigShield — because no disruption should cost a worker their week's earnings.*
